@@ -1,34 +1,90 @@
 import { useEffect, useState } from "react";
 
 import "./App.css";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useMutation } from "@apollo/client";
 
 function App() {
   const [user, setUser] = useState(null);
 
-  const GET_USER = gql`
-    query Login($email: String!, $password: String!) {
-      login(email: $email, password: $password) {
+  // const GET_USER = gql`
+  //   query Login($email: String!, $password: String!) {
+  //     login(email: $email, password: $password) {
+  //       success
+  //       data
+  //     }
+  //   }
+  // `;
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [filee, setFile] = useState("");
+  // const { loading, error, data } = useQuery(GET_USER, {
+  //   variables: { email: "a.m2002nov@gmail.con", password: "test@123" },
+  // });
+
+  const SIGNUP = gql`
+    mutation Mutation(
+      $file: Upload!
+      $firstName: String!
+      $lastName: String!
+      $email: String!
+      $mobileNumber: String!
+      $workStatus: String!
+      $currentCity: String!
+      $password: String!
+    ) {
+      signup(
+        file: $file
+        first_name: $firstName
+        last_name: $lastName
+        email: $email
+        mobile_number: $mobileNumber
+        work_status: $workStatus
+        current_city: $currentCity
+        password: $password
+      ) {
         success
         data
       }
     }
   `;
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { loading, error, data } = useQuery(GET_USER, {
-    variables: { email: "a.m2002nov@gmail.con", password: "test@123" },
+  const [signup] = useMutation(SIGNUP, {
+    onCompleted: (data) => console.log(data),
   });
 
-  if (loading) return <h1>Loading</h1>;
-  if (error) return <h1>{error.message}</h1>;
+  const handleSignup = (e) => {
+    e.preventDefault();
 
-  console.log(data);
+    signup({
+      variables: {
+        email: email,
+        password: password,
+        firstName: "Ashish",
+        lastName: "Kumar",
+        mobileNumber: "7307320365",
+        workStatus: "fresher",
+        currentCity: "Bangalore",
+        file: filee,
+      },
+    });
+  };
+
+  const onFileChange = ({
+    target: {
+      validity,
+      files: [file],
+    },
+  }) => {
+    if (validity.valid) {
+      setFile(file);
+    }
+  };
+
   return (
     <div>
-      <h1>Login ( Graph QL Test )</h1>
-      <form>
+      <h1>Signup ( Graph QL Test )</h1>
+      <form onSubmit={handleSignup}>
         <input
           onChange={(e) => setEmail(e.currentTarget.value)}
           type="text"
@@ -40,6 +96,8 @@ function App() {
           type="password"
           placeholder="Enter Pass"
         />
+        <br />
+        <input type="file" onChange={onFileChange} />
         <br />
         <input type="submit" value="login" />
       </form>
